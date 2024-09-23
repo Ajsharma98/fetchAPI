@@ -1,0 +1,90 @@
+<script>
+  import { onMount } from "svelte";
+  import { navigate } from "svelte-routing";
+
+  let userRole = ""; // This will hold the role of the logged-in user
+  let errorMessage = "";
+
+  // Simulating fetching user role from localStorage or JWT token
+  onMount(() => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      try {
+        // Assuming your JWT payload includes a `role` field
+        const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decoding JWT
+        userRole = decodedToken.role;
+      } catch (error) {
+        errorMessage = "Error reading token.";
+      }
+    }
+
+    // If no token or invalid token, redirect to login page
+    if (!token || userRole !== "admin") {
+      navigate("/login");
+    }
+  });
+
+  const navigateToAdminPage = () => {
+    navigate("/admin-section"); // Redirect to some admin-only page/section
+  };
+</script>
+
+<!-- Admin content -->
+{#if userRole === "admin"}
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+    <p>Welcome, Admin! You have special access to manage users and content.</p>
+    
+    <!-- Admin options -->
+    <div class="admin-options">
+      <button class="admin-btn" on:click={navigateToAdminPage}>Go to Admin Section</button>
+      <button class="admin-btn" on:click={() => navigate("/users")}>Manage Users</button>
+      <button class="admin-btn" on:click={() => navigate("/books")}>Manage Books</button>
+    </div>
+  </div>
+{:else if errorMessage}
+  <p class="error">{errorMessage}</p>
+{:else}
+  <p>You do not have the necessary permissions to access this page.</p>
+{/if}
+
+<style>
+  .admin-container {
+    padding: 2rem;
+    text-align: center;
+    background-color: #f0f4f7;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    width: 50%;
+  }
+
+  h2 {
+    color: #2c3e50;
+  }
+
+  .admin-options {
+    margin-top: 1.5rem;
+  }
+
+  .admin-btn {
+    padding: 12px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  .admin-btn:hover {
+    background-color: #2980b9;
+  }
+
+  .error {
+    color: red;
+    text-align: center;
+  }
+</style>
